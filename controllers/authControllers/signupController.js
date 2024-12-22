@@ -9,14 +9,14 @@ async function isEmailValid(email) {
 const userRegistration = async (req, res) => {
   try {
     console.log(req.body)
-    const {valid} = await isEmailValid(req.body.email);
-    if(!valid) {
-      return res.status(400).send({
-        result: "Failed",
-        message: "Email does not exist",
-        data: {},
-      });
-    }
+    // const {valid} = await isEmailValid(req.body.email);
+    // if(!valid) {
+    //   return res.status(400).send({
+    //     result: "Failed",
+    //     message: "Email does not exist",
+    //     data: {},
+    //   });
+    // }
     const bodyLength = Object.keys(req.body)?.length;
     if (req.body && bodyLength > 0) {
       const existingUser = await Users.findOne({ email: req.body.email });
