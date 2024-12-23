@@ -4,16 +4,26 @@ const jwt = require("jsonwebtoken");
 
 const userRegistration = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, name, email_two_step_password } = req.body;
 
-    if (!email || !password) {
-      return res.status(400).json({
-        status: "error",
-        message: "Email and password are required"
+    const {valid} = await isEmailValid(email);
+    if(!valid) {
+      return res.status(400).send({
+        result: "Failed",
+        message: "Email does not exist",
+        data: {},
       });
     }
 
-    // Check for existing user - using lean() for faster query
+    // Basic validation for required fields
+    if (!email || !password || !name || !email_two_step_password) {
+      return res.status(400).json({
+        status: "error",
+        message: "Missing required fields"
+      });
+    }
+
+    // Check for existing user
     const existingUser = await Users.findOne({ email }).lean();
     if (existingUser) {
       return res.status(400).json({
@@ -25,21 +35,14 @@ const userRegistration = async (req, res) => {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    let user = new Users({ ...req.body, hashedPassword });
-      
+    // Create new user with hashed password
+    const userData = {
+      ...req.body,
+      password: hashedPassword
+    };
 
-      try {
-        user = await user.save();
-        
-      } catch (saveError) {
-       
-        return res.status(500).send({
-          result: "Failed",
-          message: "Error saving user",
-          specificError: saveError.message,
-          data: {},
-        });
-      }
+    // Create and save user
+    const user = await Users.create(userData);
 
     // Generate token
     const token = jwt.sign(
@@ -48,18 +51,28 @@ const userRegistration = async (req, res) => {
       { expiresIn: "1h" }
     );
 
-    // Return response without password
-    const { password: _, ...userWithoutPassword } = user.toObject();
+    // Remove sensitive data from response
+    const userResponse = user.toObject();
+    delete userResponse.password;
+    delete userResponse.email_two_step_password;
 
     return res.status(201).json({
       status: "success",
       data: {
-        user: userWithoutPassword,
+        user: userResponse,
         token
       }
     });
 
   } catch (error) {
+    // Check for validation errors
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({
+        status: "error",
+        message: Object.values(error.errors).map(err => err.message).join(', ')
+      });
+    }
+
     return res.status(500).json({
       status: "error",
       message: "Internal server error"
