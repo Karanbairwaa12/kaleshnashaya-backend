@@ -128,7 +128,7 @@ const sendFailureNotification = async (email, user, findTemplate, sendResume) =>
 		return {
 			success: false,
 			message: error.message,
-			error: "Check your Google 2-Factor Verification Password",
+			error: "Check your Email or Google App Password",
 		};
 	}
 };
