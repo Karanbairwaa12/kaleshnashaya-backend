@@ -29,6 +29,10 @@ app.use("/template", templateRoute);
 app.get("/", (req, res) => {
     res.send("Welcome to the API!");
 })
+
+app.get("/page", (req, res) => {
+    res.send("Welcome to the API!");
+})
 app.listen(port, () => {
     console.log(`server is running on port: ${port}`);
 });
