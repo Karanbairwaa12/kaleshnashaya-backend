@@ -1,10 +1,10 @@
 const Users = require("../../models/userModel");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const emailValidator = require("deep-email-validator");
-async function isEmailValid(email) {
-  return emailValidator.validate(email);
-}
+// const emailValidator = require("deep-email-validator");
+// async function isEmailValid(email) {
+//   return emailValidator.validate(email);
+// }
 
 const userRegistration = async (req, res) => {
 	try {
@@ -17,14 +17,14 @@ const userRegistration = async (req, res) => {
 			});
 		}
 
-		const { valid } = await isEmailValid(req.body.email);
-		if (!valid) {
-			return res.status(400).send({
-				result: "Failed",
-				message: "Email does not exist",
-				data: {},
-			});
-		}
+		// const { valid } = await isEmailValid(req.body.email);
+		// if (!valid) {
+		// 	return res.status(400).send({
+		// 		result: "Failed",
+		// 		message: "Email does not exist",
+		// 		data: {},
+		// 	});
+		// }
 
 		let password = req.body.password;
 		password = await bcrypt.hash(password, 10);
