@@ -1,83 +1,69 @@
 const Users = require("../../models/userModel");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const emailValidator = require("deep-email-validator");
+async function isEmailValid(email) {
+  return emailValidator.validate(email);
+}
 
 const userRegistration = async (req, res) => {
-  try {
-    const { email, password, name, email_two_step_password } = req.body;
+	try {
+		const existingUser = await Users.findOne({ email: req.body.email });
+		if (existingUser) {
+			return res.status(400).send({
+				result: "Failed",
+				message: "Email already exists. Please use a different email.",
+				data: {},
+			});
+		}
 
-    const {valid} = await isEmailValid(email);
-    if(!valid) {
-      return res.status(400).send({
-        result: "Failed",
-        message: "Email does not exist",
-        data: {},
-      });
-    }
+		const { valid } = await isEmailValid(req.body.email);
+		if (!valid) {
+			return res.status(400).send({
+				result: "Failed",
+				message: "Email does not exist",
+				data: {},
+			});
+		}
 
-    // Basic validation for required fields
-    if (!email || !password || !name || !email_two_step_password) {
-      return res.status(400).json({
-        status: "error",
-        message: "Missing required fields"
-      });
-    }
+		let password = req.body.password;
+		password = await bcrypt.hash(password, 10);
+		let user = new Users({ ...req.body, password });
 
-    // Check for existing user
-    const existingUser = await Users.findOne({ email }).lean();
-    if (existingUser) {
-      return res.status(400).json({
-        status: "error",
-        message: "Email already exists"
-      });
-    }
+		try {
+			user = await user.save();
+		} catch (saveError) {
+			return res.status(500).send({
+				result: "Failed",
+				message: "Error saving user",
+				specificError: saveError.message,
+				data: {},
+			});
+		}
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
+		user = user.toObject();
+		delete user.password;
+		const accessToken = jwt.sign(
+			{
+				id: user._id,
+			},
+			process.env.JWT_KEY,
+			{ expiresIn: "1h" }
+		);
 
-    // Create new user with hashed password
-    const userData = {
-      ...req.body,
-      password: hashedPassword
-    };
-
-    // Create and save user
-    const user = await Users.create(userData);
-
-    // Generate token
-    const token = jwt.sign(
-      { id: user._id },
-      process.env.JWT_KEY,
-      { expiresIn: "1h" }
-    );
-
-    // Remove sensitive data from response
-    const userResponse = user.toObject();
-    delete userResponse.password;
-    delete userResponse.email_two_step_password;
-
-    return res.status(201).json({
-      status: "success",
-      data: {
-        user: userResponse,
-        token
-      }
-    });
-
-  } catch (error) {
-    // Check for validation errors
-    if (error.name === 'ValidationError') {
-      return res.status(400).json({
-        status: "error",
-        message: Object.values(error.errors).map(err => err.message).join(', ')
-      });
-    }
-
-    return res.status(500).json({
-      status: "error",
-      message: "Internal server error"
-    });
-  }
+		res.status(201).send({
+			result: "Success",
+			message: "User has successfully registered.",
+			data: { ...user, accessToken },
+		});
+	} catch (error) {
+		res.status(500).send({
+			result: "Failed",
+			message: "Internal Server Error",
+			specificError: error.message,
+			data: {},
+		});
+	}
 };
 
 module.exports = { userRegistration };
