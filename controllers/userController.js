@@ -71,16 +71,16 @@ const updateUser = async (req, res) => {
 		let userData = req.body;
 		let file = req.file;
 
-		if (req.body.email) {
-			const { valid } = await isEmailValid(req.body.email);
-			if (!valid) {
-				return res.status(400).send({
-					result: "Failed",
-					message: "Email does not exist",
-					data: {},
-				});
-			}
-		}
+		// if (req.body.email) {
+		// 	const { valid } = await isEmailValid(req.body.email);
+		// 	if (!valid) {
+		// 		return res.status(400).send({
+		// 			result: "Failed",
+		// 			message: "Email does not exist",
+		// 			data: {},
+		// 		});
+		// 	}
+		// }
 
 		// Check if the PDF file was uploaded
 		if (file) {
@@ -242,14 +242,14 @@ const sendMail = async (req, res) => {
 		const userId = req.params.id;
 		const { mail_id, isresume } = req.body;
 
-		const { valid } = await isEmailValid(mail_id);
-		if (!valid) {
-			return res.status(400).send({
-				result: "Failed",
-				message: "Email does not exist",
-				data: {},
-			});
-		}
+		// const { valid } = await isEmailValid(mail_id);
+		// if (!valid) {
+		// 	return res.status(400).send({
+		// 		result: "Failed",
+		// 		message: "Email does not exist",
+		// 		data: {},
+		// 	});
+		// }
 
 		// Step 1: Fetch the User from the database
 		const user = await User.findById(userId);
