@@ -1,32 +1,11 @@
 const Users = require("../../models/userModel");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const { verifyEmail } = require("../../utils/common");
 // const emailValidator = require("deep-email-validator");
 // async function isEmailValid(email) {
 //   return emailValidator.validate(email);
 // }
-
-const verifyEmail = async (email) => {
-	try {
-	  const response = await fetch(
-		`https://emailvalidation.abstractapi.com/v1/?api_key=${process.env.ABSTRACT_API_KEY}&email=${email}`
-	  );
-	  const data = await response.json();
-	  
-	  // Check if email is deliverable and has valid mailbox
-	  return {
-		isValid: data.deliverability === "DELIVERABLE" && 
-				 data.is_valid_format.value && 
-				 !data.is_disposable_email.value,
-		reason: data.deliverability !== "DELIVERABLE" ? "Email address doesn't exist" :
-				!data.is_valid_format.value ? "Invalid email format" :
-				data.is_disposable_email.value ? "Disposable emails not allowed" : null
-	  };
-	} catch (error) {
-	  console.error('Email verification error:', error);
-	  throw new Error('Email verification failed');
-	}
-  };
 
 const userRegistration = async (req, res) => {
 	try {

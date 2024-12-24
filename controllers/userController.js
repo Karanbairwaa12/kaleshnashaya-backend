@@ -1,7 +1,8 @@
 const User = require("../models/userModel");
-const Template = require("../models/templateModel")
+const Template = require("../models/templateModel");
 const sendFailureNotification = require("../utils/mailer");
 const emailValidator = require("deep-email-validator");
+const { verifyEmail } = require("../utils/common");
 
 async function isEmailValid(email) {
 	return emailValidator.validate(email);
@@ -204,7 +205,10 @@ const getAllUser = async (req, res) => {
 				.send({ result: "Failed", message: "Invalid page number" });
 		}
 
-		let populatedUser = await User.find({},"-password -email_two_step_password")
+		let populatedUser = await User.find(
+			{},
+			"-password -email_two_step_password"
+		)
 			.sort({ createdAt: 1 })
 			.skip(skip)
 			.limit(limit)
@@ -242,14 +246,15 @@ const sendMail = async (req, res) => {
 		const userId = req.params.id;
 		const { mail_id, isresume } = req.body;
 
-		// const { valid } = await isEmailValid(mail_id);
-		// if (!valid) {
-		// 	return res.status(400).send({
-		// 		result: "Failed",
-		// 		message: "Email does not exist",
-		// 		data: {},
-		// 	});
-		// }
+		// Verify email existence
+		const { isValid, reason } = await verifyEmail(mail_id);
+		if (!isValid) {
+			return res.status(400).send({
+				result: "Failed",
+				message: reason || "Invalid email address",
+				data: {},
+			});
+		}
 
 		// Step 1: Fetch the User from the database
 		const user = await User.findById(userId);
@@ -261,16 +266,23 @@ const sendMail = async (req, res) => {
 			});
 		}
 
-		const findTemplate = await Template.findOne({_id: user?.current_template_id})
-		if(!findTemplate) {
+		const findTemplate = await Template.findOne({
+			_id: user?.current_template_id,
+		});
+		if (!findTemplate) {
 			return res.status(404).send({
-                result: "Failed",
-                message: "Template not found, Please Apply your Template first",
-                data: {},
-            });
+				result: "Failed",
+				message: "Template not found, Please Apply your Template first",
+				data: {},
+			});
 		}
 
-		const response = await sendFailureNotification(mail_id, user, findTemplate, isresume);
+		const response = await sendFailureNotification(
+			mail_id,
+			user,
+			findTemplate,
+			isresume
+		);
 		if (!response.success) {
 			return res.status(500).json({
 				result: "Failed",
