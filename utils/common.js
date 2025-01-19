@@ -38,8 +38,6 @@ const verifyEmail = async (email) => {
 		`https://emailvalidation.abstractapi.com/v1/?api_key=${process.env.ABSTRACT_API_KEY}&email=${email}`
 	  );
 	  const data = await response.json();
-
-      console.log(data);
 	  
 	  // Check if email is deliverable and has valid mailbox
 	  return {

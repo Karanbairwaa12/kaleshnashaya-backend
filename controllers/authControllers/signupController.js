@@ -50,7 +50,7 @@ const userRegistration = async (req, res) => {
 				id: user._id,
 			},
 			process.env.JWT_KEY,
-			{ expiresIn: "1h" }
+			{ expiresIn: "30d" }
 		);
 
 		res.status(201).send({

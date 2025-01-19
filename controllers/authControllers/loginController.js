@@ -37,7 +37,7 @@ const getUserAuthentication = async (req, res) => {
         role: user.user_role,
       },
       process.env.JWT_KEY,
-      { expiresIn: "1d" }
+      { expiresIn: "30d" }
     );
 
     const userData = user.toObject();

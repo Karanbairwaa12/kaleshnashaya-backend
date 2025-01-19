@@ -51,7 +51,6 @@ const getUserByToken = async (req, res) => {
 		delete userData.password;
 		delete userData.email_two_step_password;
 
-		console.log(userData);
 		res.status(200).send({
 			result: "Success",
 			message: "User details fetched successfully.",
@@ -244,7 +243,7 @@ const getAllUser = async (req, res) => {
 const sendMail = async (req, res) => {
 	try {
 		const userId = req.params.id;
-		const { mail_id, isresume } = req.body;
+		const { mail_id, isresume, content={} } = req.body;
 
 		// Verify email existence
 		const { isValid, reason } = await verifyEmail(mail_id);
@@ -266,10 +265,10 @@ const sendMail = async (req, res) => {
 			});
 		}
 
-		const findTemplate = await Template.findOne({
-			_id: user?.current_template_id,
-		});
-		if (!findTemplate) {
+		// const findTemplate = await Template.findOne({
+		// 	_id: user?.current_template_id,
+		// });
+		if (!content && Object.keys(content)?.length==0) {
 			return res.status(404).send({
 				result: "Failed",
 				message: "Template not found, Please Apply your Template first",
@@ -280,9 +279,10 @@ const sendMail = async (req, res) => {
 		const response = await sendFailureNotification(
 			mail_id,
 			user,
-			findTemplate,
+			content,
 			isresume
 		);
+
 		if (!response.success) {
 			return res.status(500).json({
 				result: "Failed",

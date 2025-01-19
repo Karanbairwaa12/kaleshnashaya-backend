@@ -7,6 +7,7 @@ const authRoutes  = require("./router/authRoutes");
 const userRoute = require('./router/userRoutes');
 const pdfRoutes = require("./router/pdfRoutes")
 const templateRoute = require('./router/tamplateRoutes')
+const aiRoutes = require('./router/aiRoutes')
 
 
 const dbConnection = require("./utils/configs/db/db.config");
@@ -25,6 +26,7 @@ app.use("/auth", authRoutes);
 app.use("/user", userRoute);
 app.use("/api/pdf", pdfRoutes);
 app.use("/template", templateRoute);
+app.use("/chat", aiRoutes)
 
 app.get("/", (req, res) => {
     res.send("Welcome to the API!");
