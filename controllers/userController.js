@@ -256,14 +256,14 @@ const sendMail = async (req, res) => {
 		// 		data: {},
 		// 	});
 		// }
-		const { valid } = await isEmailValid(mail_id);
-		if (!valid) {
-			return res.status(400).send({
-				result: "Failed",
-				message: "Email does not exist",
-				data: {},
-			});
-		}
+		// const { valid } = await isEmailValid(mail_id);
+		// if (!valid) {
+		// 	return res.status(400).send({
+		// 		result: "Failed",
+		// 		message: "Email does not exist",
+		// 		data: {},
+		// 	});
+		// }
 
 		// Step 1: Fetch the User from the database
 		const user = await User.findById(userId);
