@@ -18,15 +18,24 @@ const userRegistration = async (req, res) => {
 			});
 		}
 
-		 // Verify email existence
-		 const { isValid, reason } = await verifyEmail(req.body.email);
-		 if (!isValid) {
-		   return res.status(400).send({
-			 result: "Failed",
-			 message: reason || "Invalid email address",
-			 data: {}
-		   });
-		 }
+		// Verify email existence
+		//  const { isValid, reason } = await verifyEmail(req.body.email);
+		//  if (!isValid) {
+		//    return res.status(400).send({
+		// 	 result: "Failed",
+		// 	 message: reason || "Invalid email address",
+		// 	 data: {}
+		//    });
+		//  }
+
+		const { valid } = await isEmailValid(req.body.email);
+		if (!valid) {
+			return res.status(400).send({
+				result: "Failed",
+				message: "Email does not exist",
+				data: {},
+			});
+		}
 
 		let password = req.body.password;
 		password = await bcrypt.hash(password, 10);

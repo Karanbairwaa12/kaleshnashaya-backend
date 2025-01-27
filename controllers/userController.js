@@ -243,14 +243,24 @@ const getAllUser = async (req, res) => {
 const sendMail = async (req, res) => {
 	try {
 		const userId = req.params.id;
-		const { mail_id, isresume, content={} } = req.body;
+		const { mail_id, isresume, content = {} } = req.body;
 
 		// Verify email existence
-		const { isValid, reason } = await verifyEmail(mail_id);
-		if (!isValid) {
+		// const { isValid, reason } = await verifyEmail(mail_id);
+
+		// console.log("working", isValid, reason)
+		// if (!isValid) {
+		// 	return res.status(400).send({
+		// 		result: "Failed",
+		// 		message: reason || "Invalid email address",
+		// 		data: {},
+		// 	});
+		// }
+		const { valid } = await isEmailValid(mail_id);
+		if (!valid) {
 			return res.status(400).send({
 				result: "Failed",
-				message: reason || "Invalid email address",
+				message: "Email does not exist",
 				data: {},
 			});
 		}
@@ -268,7 +278,7 @@ const sendMail = async (req, res) => {
 		// const findTemplate = await Template.findOne({
 		// 	_id: user?.current_template_id,
 		// });
-		if (!content && Object.keys(content)?.length==0) {
+		if (!content && Object.keys(content)?.length == 0) {
 			return res.status(404).send({
 				result: "Failed",
 				message: "Template not found, Please Apply your Template first",
